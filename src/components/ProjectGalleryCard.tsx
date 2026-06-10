@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiMapPin, FiChevronLeft, FiChevronRight, FiMaximize2, FiX } from 'react-icons/fi';
@@ -17,6 +17,46 @@ export interface ProjectGalleryCardProps {
 export default function ProjectGalleryCard({ title, category, client, location, description, images }: ProjectGalleryCardProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
+  
+  // Prevent background scrolling when lightbox is open
+  useEffect(() => {
+    if (lightboxOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [lightboxOpen]);
+  
+  // Touch handlers for swipe
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+
+  const minSwipeDistance = 50;
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+
+    if (isLeftSwipe) {
+      nextImage();
+    } else if (isRightSwipe) {
+      prevImage();
+    }
+  };
 
   const nextImage = (e?: React.MouseEvent) => {
     e?.stopPropagation();
@@ -39,6 +79,9 @@ export default function ProjectGalleryCard({ title, category, client, location, 
           className="project-card-image-wrapper" 
           style={{ position: 'relative', cursor: 'pointer' }}
           onClick={() => setLightboxOpen(true)}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
         >
           {location && (
             <span className="project-card-badge" style={{ zIndex: 10 }}>
@@ -118,6 +161,9 @@ export default function ProjectGalleryCard({ title, category, client, location, 
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
             >
               <Image
                 src={currentImage}

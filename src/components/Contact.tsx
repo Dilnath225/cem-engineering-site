@@ -19,13 +19,43 @@ export default function Contact() {
     message: '',
   });
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState(false);
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    // Demo form submission
-    setSubmitted(true);
-    setTimeout(() => setSubmitted(false), 4000);
-    setFormData({ name: '', email: '', subject: '', message: '' });
+    setIsSubmitting(true);
+    setSubmitError(false);
+
+    try {
+      const response = await fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          access_key: "93d37e85-3694-4212-a669-5552074393e0",
+          name: formData.name,
+          email: formData.email,
+          subject: formData.subject,
+          message: formData.message,
+        }),
+      });
+      const result = await response.json();
+      if (result.success) {
+        setSubmitted(true);
+        setTimeout(() => setSubmitted(false), 5000);
+        setFormData({ name: '', email: '', subject: '', message: '' });
+      } else {
+        setSubmitError(true);
+      }
+    } catch (error) {
+      console.error("Form submission error:", error);
+      setSubmitError(true);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -228,9 +258,14 @@ export default function Contact() {
                     />
                   </div>
 
-                  <button type="submit" className="form-submit">
-                    Send Message <FiSend />
+                  <button type="submit" className="form-submit" disabled={isSubmitting}>
+                    {isSubmitting ? 'Sending...' : 'Send Message'} {!isSubmitting && <FiSend />}
                   </button>
+                  {submitError && (
+                    <p style={{ color: '#ef4444', marginTop: '1rem', textAlign: 'center' }}>
+                      Something went wrong. Please try again later.
+                    </p>
+                  )}
                 </form>
               )}
             </div>

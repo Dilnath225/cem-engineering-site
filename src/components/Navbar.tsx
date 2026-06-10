@@ -75,9 +75,10 @@ export default function Navbar() {
   }, [mobileOpen]);
 
   return (
-    <nav className={`navbar${scrolled ? ' scrolled' : ''}`}>
-      <div className="container">
-        <div className="navbar-inner">
+    <>
+      <nav className={`navbar${scrolled ? ' scrolled' : ''}`}>
+        <div className="container">
+          <div className="navbar-inner">
           {/* ── Logo ──────────────────────────────── */}
           <a
             href="#home"
@@ -140,6 +141,7 @@ export default function Navbar() {
           </button>
         </div>
       </div>
+      </nav>
 
       {/* ── Mobile overlay menu ────────────────── */}
       <div className={`navbar-mobile-menu${mobileOpen ? ' open' : ''}`}>
@@ -163,6 +165,6 @@ export default function Navbar() {
           Get a Quote
         </button>
       </div>
-    </nav>
+    </>
   );
 }
